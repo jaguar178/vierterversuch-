@@ -1,30 +1,27 @@
-import torch
-from torchvision import models, transforms
+import numpy as np
 from PIL import Image
+from tensorflow.keras.models import load_model
 
-# Vortrainiertes Modell laden
-model = models.resnet18(pretrained=True)
-model.eval()
+# Modell laden
+model = load_model("model/keras_model.h5", compile=False)
 
-# ImageNet Labels (vereinfachte Demo)
-labels = ["motorcycle", "car", "bicycle", "truck"]
-
-# Transformation
-transform = transforms.Compose([
-    transforms.Resize((224, 224)),
-    transforms.ToTensor(),
-])
+# Labels laden
+with open("model/labels.txt", "r") as f:
+    class_names = [line.strip() for line in f.readlines()]
 
 def predict_image(image: Image.Image):
-    img = transform(image).unsqueeze(0)
+    # Bild vorbereiten
+    image = image.resize((224, 224))
+    image = np.asarray(image)
+    image = image / 255.0  # Normalisierung
 
-    with torch.no_grad():
-        outputs = model(img)
+    image = np.expand_dims(image, axis=0)
 
-    _, predicted = outputs.max(1)
+    # Prediction
+    prediction = model.predict(image)
+    index = np.argmax(prediction)
+    confidence = float(prediction[0][index])
 
-    # FAKE Mapping (nur Demo!)
-    label = labels[predicted.item() % len(labels)]
-    confidence = torch.softmax(outputs, dim=1)[0][predicted].item()
+    label = class_names[index]
 
     return label, confidence
