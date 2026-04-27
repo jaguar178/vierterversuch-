@@ -1,1 +1,7 @@
-
+{
+  "motorcycle": {
+    "Marke": "Unbekannt",
+    "Typ": "Motorrad",
+    "Info": "Demo-Erkennung"
+  }
+}
